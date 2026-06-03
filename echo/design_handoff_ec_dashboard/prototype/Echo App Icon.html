@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Echo — App Icon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{ --terra:#d2693f; --terra2:#e08a5c; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; background:#e9e6e1; color:#2a2723;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:1080px; margin:0 auto; padding:54px 48px 80px; }
+  .eyebrow{ font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#9a9082; }
+  h1{ font-size:30px; font-weight:600; letter-spacing:-.02em; margin:10px 0 6px; }
+  .lede{ font-size:15px; color:#6b635a; max-width:560px; line-height:1.5; margin:0; }
+
+  /* squircle icon shell */
+  .icon{ position:relative; border-radius:23%; overflow:hidden;
+    box-shadow:0 14px 34px rgba(40,30,20,.20), 0 2px 6px rgba(40,30,20,.12), inset 0 1px 0 rgba(255,255,255,.10); }
+  .icon::after{ content:""; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(155deg, rgba(255,255,255,.16), rgba(255,255,255,0) 42%); }
+  .icon svg, .icon .glyph{ position:absolute; inset:0; width:100%; height:100%; }
+  .glyph{ display:flex; align-items:center; justify-content:center; }
+
+  .hero{ display:flex; gap:40px; align-items:center; margin:40px 0 14px;
+    background:#fff; border-radius:20px; padding:38px 40px; box-shadow:0 1px 0 rgba(0,0,0,.04); }
+  .hero .icon{ width:236px; height:236px; flex:0 0 auto; }
+  .hero h2{ font-size:22px; margin:0 0 8px; font-weight:600; letter-spacing:-.01em; }
+  .hero p{ margin:0; color:#6b635a; font-size:14.5px; line-height:1.55; max-width:380px; }
+  .tag{ display:inline-block; white-space:nowrap; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--terra); border:1px solid #e6c9b8; border-radius:99px; padding:4px 10px; margin-bottom:14px; }
+
+  .grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; margin-top:34px; }
+  .cell{ background:#fff; border-radius:16px; padding:22px 22px 18px; text-align:center; box-shadow:0 1px 0 rgba(0,0,0,.04); }
+  .cell .icon{ width:128px; height:128px; margin:0 auto 16px; }
+  .cell .name{ font-size:14px; font-weight:600; }
+  .cell .desc{ font-size:12px; color:#8a8175; margin-top:3px; line-height:1.4; }
+
+  .sectn{ font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#9a9082; margin:48px 0 18px; }
+
+  /* dock */
+  .dock{ display:flex; align-items:flex-end; gap:16px; padding:16px 22px;
+    background:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.8);
+    border-radius:24px; box-shadow:0 18px 40px rgba(40,30,20,.16); backdrop-filter:blur(8px); width:max-content; margin:0 auto; }
+  .dock .ph{ width:60px; height:60px; border-radius:23%; background:linear-gradient(160deg,#cfcabf,#a39c90);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.3); }
+  .dock .icon{ width:72px; height:72px; transform:translateY(-2px); }
+
+  /* sizes */
+  .sizes{ display:flex; align-items:flex-end; gap:30px; }
+  .sizes .s{ text-align:center; }
+  .sizes .icon{ margin:0 auto 8px; }
+  .sizes .lbl{ font-size:11px; color:#9a9082; font-variant-numeric:tabular-nums; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Echo</div>
+  <h1>App icon</h1>
+  <p class="lede">The name does the work: a signal leaving a source and returning. Four takes below — all in Echo's terracotta. My pick is the Ripple.</p>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="icon" id="hero-ico" style="background:radial-gradient(120% 120% at 30% 78%, #1f1a16, #131110);">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <g fill="none" stroke-linecap="round">
+          <circle cx="32" cy="70" r="20" stroke="#d2693f" stroke-width="6" opacity="1"/>
+          <circle cx="32" cy="70" r="38" stroke="#d2693f" stroke-width="5.2" opacity=".66"/>
+          <circle cx="32" cy="70" r="56" stroke="#d2693f" stroke-width="4.4" opacity=".36"/>
+          <circle cx="32" cy="70" r="74" stroke="#d2693f" stroke-width="3.6" opacity=".16"/>
+        </g>
+        <circle cx="32" cy="70" r="6.4" fill="#f0a877"/>
+      </svg>
+    </div>
+    <div>
+      <span class="tag">Recommended · Ripple</span>
+      <h2>A pulse, echoing out</h2>
+      <p>A bright source in the lower corner with concentric waves expanding across the tile. Reads instantly at any size, ties straight to the name, and rhymes with the day-ring metaphor inside the app.</p>
+    </div>
+  </div>
+
+  <!-- CONCEPTS -->
+  <div class="grid">
+    <!-- Ripple (dark) -->
+    <div class="cell">
+      <div class="icon" style="background:radial-gradient(120% 120% at 30% 78%, #1f1a16, #131110);">
+        <svg viewBox="0 0 100 100">
+          <g fill="none" stroke-linecap="round">
+            <circle cx="32" cy="70" r="20" stroke="#d2693f" stroke-width="6"/>
+            <circle cx="32" cy="70" r="38" stroke="#d2693f" stroke-width="5.2" opacity=".66"/>
+            <circle cx="32" cy="70" r="56" stroke="#d2693f" stroke-width="4.4" opacity=".36"/>
+            <circle cx="32" cy="70" r="74" stroke="#d2693f" stroke-width="3.6" opacity=".16"/>
+          </g>
+          <circle cx="32" cy="70" r="6.4" fill="#f0a877"/>
+        </svg>
+      </div>
+      <div class="name">Ripple · dark</div>
+      <div class="desc">The signature mark</div>
+    </div>
+
+    <!-- Ripple (paper) -->
+    <div class="cell">
+      <div class="icon" style="background:linear-gradient(160deg,#f4eee4,#e7ddcd);">
+        <svg viewBox="0 0 100 100">
+          <g fill="none" stroke-linecap="round">
+            <circle cx="32" cy="70" r="20" stroke="#cf4f3e" stroke-width="6"/>
+            <circle cx="32" cy="70" r="38" stroke="#cf4f3e" stroke-width="5.2" opacity=".6"/>
+            <circle cx="32" cy="70" r="56" stroke="#cf4f3e" stroke-width="4.4" opacity=".32"/>
+            <circle cx="32" cy="70" r="74" stroke="#cf4f3e" stroke-width="3.6" opacity=".14"/>
+          </g>
+          <circle cx="32" cy="70" r="6.4" fill="#cf4f3e"/>
+        </svg>
+      </div>
+      <div class="name">Ripple · light</div>
+      <div class="desc">For light docks</div>
+    </div>
+
+    <!-- Prompt (terminal) -->
+    <div class="cell">
+      <div class="icon" style="background:linear-gradient(160deg,#15171a,#0b0c0e);">
+        <div class="glyph" style="gap:5px; font-family:'JetBrains Mono',monospace; font-weight:700;">
+          <span style="font-size:38px; color:#d2693f; letter-spacing:-1px;">ec</span>
+          <span style="width:11px; height:30px; background:#cfcabf; display:inline-block; border-radius:1px; transform:translateY(2px);"></span>
+        </div>
+      </div>
+      <div class="name">Prompt</div>
+      <div class="desc">On-brand with ec://</div>
+    </div>
+
+    <!-- Day-ring -->
+    <div class="cell">
+      <div class="icon" style="background:linear-gradient(160deg,#f4eee4,#e7ddcd);">
+        <svg viewBox="0 0 100 100" style="transform:rotate(-90deg);">
+          <g fill="none" stroke-width="13" stroke-linecap="butt">
+            <circle cx="50" cy="50" r="30" stroke="#d2693f" stroke-dasharray="113 75" stroke-dashoffset="0"/>
+            <circle cx="50" cy="50" r="30" stroke="#3fa56b" stroke-dasharray="24 164" stroke-dashoffset="-116"/>
+            <circle cx="50" cy="50" r="30" stroke="#3f86d2" stroke-dasharray="20 168" stroke-dashoffset="-143"/>
+            <circle cx="50" cy="50" r="30" stroke="#9a6ad6" stroke-dasharray="17 171" stroke-dashoffset="-166"/>
+          </g>
+        </svg>
+      </div>
+      <div class="name">Day-ring</div>
+      <div class="desc">Your day, as data</div>
+    </div>
+  </div>
+
+  <!-- DOCK -->
+  <div class="sectn">In the dock</div>
+  <div class="dock">
+    <div class="ph"></div>
+    <div class="ph"></div>
+    <div class="icon" style="background:radial-gradient(120% 120% at 30% 78%, #1f1a16, #131110);">
+      <svg viewBox="0 0 100 100">
+        <g fill="none" stroke-linecap="round">
+          <circle cx="32" cy="70" r="20" stroke="#d2693f" stroke-width="6"/>
+          <circle cx="32" cy="70" r="38" stroke="#d2693f" stroke-width="5.2" opacity=".66"/>
+          <circle cx="32" cy="70" r="56" stroke="#d2693f" stroke-width="4.4" opacity=".36"/>
+          <circle cx="32" cy="70" r="74" stroke="#d2693f" stroke-width="3.6" opacity=".16"/>
+        </g>
+        <circle cx="32" cy="70" r="6.4" fill="#f0a877"/>
+      </svg>
+    </div>
+    <div class="ph"></div>
+    <div class="ph"></div>
+  </div>
+
+  <!-- SIZES -->
+  <div class="sectn">Holds up small</div>
+  <div class="sizes">
+    <div class="s"><div class="icon" style="width:120px;height:120px;background:radial-gradient(120% 120% at 30% 78%, #1f1a16, #131110);"><svg viewBox="0 0 100 100"><g fill="none" stroke-linecap="round"><circle cx="32" cy="70" r="20" stroke="#d2693f" stroke-width="6"/><circle cx="32" cy="70" r="38" stroke="#d2693f" stroke-width="5.2" opacity=".66"/><circle cx="32" cy="70" r="56" stroke="#d2693f" stroke-width="4.4" opacity=".36"/></g><circle cx="32" cy="70" r="6.4" fill="#f0a877"/></svg></div><div class="lbl">128</div></div>
+    <div class="s"><div class="icon" style="width:64px;height:64px;background:radial-gradient(120% 120% at 30% 78%, #1f1a16, #131110);"><svg viewBox="0 0 100 100"><g fill="none" stroke-linecap="round"><circle cx="32" cy="70" r="20" stroke="#d2693f" stroke-width="6.5"/><circle cx="32" cy="70" r="38" stroke="#d2693f" stroke-width="5.6" opacity=".66"/><circle cx="32" cy="70" r="56" stroke="#d2693f" stroke-width="4.8" opacity=".36"/></g><circle cx="32" cy="70" r="6.8" fill="#f0a877"/></svg></div><div class="lbl">64</div></div>
+    <div class="s"><div class="icon" style="width:32px;height:32px;background:radial-gradient(120% 120% at 30% 78%, #1f1a16, #131110);"><svg viewBox="0 0 100 100"><g fill="none" stroke-linecap="round"><circle cx="32" cy="70" r="20" stroke="#d2693f" stroke-width="8"/><circle cx="32" cy="70" r="40" stroke="#d2693f" stroke-width="7" opacity=".55"/></g><circle cx="32" cy="70" r="8" fill="#f0a877"/></svg></div><div class="lbl">32</div></div>
+    <div class="s"><div class="icon" style="width:18px;height:18px;background:#161311;"><svg viewBox="0 0 100 100"><g fill="none" stroke-linecap="round"><circle cx="34" cy="68" r="26" stroke="#d2693f" stroke-width="11"/></g><circle cx="34" cy="68" r="10" fill="#f0a877"/></svg></div><div class="lbl">16</div></div>
+  </div>
+</div>
+</body>
+</html>
