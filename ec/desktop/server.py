@@ -39,6 +39,13 @@ class EchoDesktopHandler(BaseHTTPRequestHandler):
         values = self._query().get(name)
         return values[0] if values else default
 
+    def _read_json_body(self) -> dict:
+        length = int(self.headers.get("Content-Length", "0"))
+        if length <= 0:
+            return {}
+        raw = self.rfile.read(length)
+        return json.loads(raw.decode("utf-8"))
+
     def _serve_static(self, rel_path: str) -> None:
         path = (STATIC_DIR / rel_path).resolve()
         if not str(path).startswith(str(STATIC_DIR.resolve())):
@@ -91,6 +98,9 @@ class EchoDesktopHandler(BaseHTTPRequestHandler):
             if route == "/api/status":
                 self._send_json(api.json_response(api.status_payload()))
                 return
+            if route == "/api/ask/status":
+                self._send_json(api.json_response(api.ask_status_payload()))
+                return
             if route == "/api/today":
                 self._send_json(api.json_response(api.today_payload(self._q("date") or None)))
                 return
@@ -112,6 +122,26 @@ class EchoDesktopHandler(BaseHTTPRequestHandler):
                 return
             if parsed.path == "/api/collector/start":
                 self._send_json(api.json_response(api.collector_start_payload()))
+                return
+            if parsed.path in ("/api/ask", "/api/query"):
+                body = self._read_json_body()
+                prompt = str(body.get("prompt") or body.get("sql", "")).strip()
+                if not prompt:
+                    self._send_json(api.json_response({"error": "missing prompt"}), status=400)
+                    return
+                try:
+                    result = api.ask_payload(prompt, body.get("date"))
+                    self._send_json(api.json_response(result))
+                except ValueError as exc:
+                    self._send_json(
+                        api.json_response(
+                            {
+                                "error": str(exc),
+                                "hint": "try: how much time did I spend coding today?",
+                            }
+                        ),
+                        status=400,
+                    )
                 return
             self.send_error(404)
         except Exception as exc:

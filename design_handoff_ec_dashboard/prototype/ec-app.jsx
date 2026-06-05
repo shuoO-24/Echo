@@ -1,7 +1,7 @@
 /* Echo — ec:// terminal, full interactive prototype.
    Reads window.ECHO (data.js), DayStrip (shared.jsx), useTweaks/TweaksPanel (tweaks-panel.jsx). */
 const { useState, useEffect, useRef, useMemo } = React;
-const { TodayView, TimelineView, ProjectsView, ActivityView } = window;
+const { TodayView, TimelineView, ProjectsView, ActivityView, QueryView } = window;
 
 /* ---------- themes ---------- */
 const THEMES = {
@@ -104,7 +104,7 @@ function App() {
     fontSize: dens.fs, letterSpacing: '0', position: 'relative',
   };
 
-  const cmds = [['today', 'today'], ['timeline', 'timeline'], ['projects', 'projects'], ['activity', 'activity']];
+  const cmds = [['today', 'today'], ['timeline', 'timeline'], ['projects', 'projects'], ['query', 'query'], ['activity', 'activity']];
 
   return (
     <div style={rootStyle}>
@@ -153,6 +153,7 @@ function App() {
           {view === 'today' && <TodayView E={E} CD={CD} dens={dens} setView={setView} feed={feed} live={live} setLive={setLive} streaming={streaming} />}
           {view === 'timeline' && <TimelineView E={E} CD={CD} dens={dens} flash={flash} setFlash={setFlash} />}
           {view === 'projects' && <ProjectsView E={E} CD={CD} dens={dens} />}
+          {view === 'query' && <QueryView dens={dens} />}
           {view === 'activity' && <ActivityView E={E} CD={CD} dens={dens} feed={feed} live={live} setLive={setLive} collector={collector} setCollector={setCollector} kb={kb} ms={ms} streaming={streaming} liveSpeed={t.liveSpeed} />}
         </div>
       </div>

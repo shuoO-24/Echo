@@ -97,32 +97,42 @@ function TodayView({ E, CD, dens, setView, feed, live, setLive, streaming }) {
         </Panel>
       </div>
 
-      <Panel title="PROJECTS" right="project ▸ category ▸ app">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 28 }}>
-          {E.projects.map((p, i) => (
-            <div key={i}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 9 }}>
-                <span style={{ color: p.name ? 'var(--accent)' : 'var(--dim)' }}>{p.name ? '◆ ' + p.name : '◇ (no project)'}</span>
-                <span>{E.fmtMins(p.mins)} <span style={{ color: 'var(--dim)' }}>· {p.sessions}s</span></span>
-              </div>
-              <div style={{ display: 'flex', height: 6, gap: 2, marginBottom: 10 }}>
-                {p.cats.map((c, ci) => <div key={ci} style={{ width: (c.mins / p.mins) * 100 + '%', background: CD[c.cat] }}></div>)}
-              </div>
-              {p.apps.map((a, ai) => (
-                <div key={ai} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--dim)', padding: '3px 0' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><span style={{ color: 'var(--faint)' }}>{ai === p.apps.length - 1 ? '└─' : '├─'}</span> <AppIcon app={a.app} size={17} /> <span style={{ color: 'var(--fg)' }}>{a.app}</span></span>
-                  <span>{E.fmtMins(a.mins)}</span>
-                </div>
-              ))}
-            </div>
-          ))}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.72fr) minmax(0, 1fr)', gap: 16, alignItems: 'start' }}>
+        {/* ASK — query console (left, larger) */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 11, paddingLeft: 2, flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--accent)', letterSpacing: '0.12em', whiteSpace: 'nowrap' }}>▸ ASK</span>
+            <span style={{ color: 'var(--dim)', whiteSpace: 'nowrap' }}>query your day · read-only SQL</span>
+          </div>
+          <window.QueryView dens={dens} compact />
         </div>
-      </Panel>
+
+        {/* PROJECTS (right, stacked, smaller) */}
+        <Panel title="PROJECTS" right="time · sessions">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            {E.projects.map((p, i) => (
+              <div key={i} style={{ paddingBottom: i < E.projects.length - 1 ? 18 : 0, borderBottom: i < E.projects.length - 1 ? '1px solid var(--line)' : 'none' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'baseline', marginBottom: 9 }}>
+                  <span style={{ color: p.name ? 'var(--accent)' : 'var(--dim)', whiteSpace: 'nowrap' }}>{p.name ? '◆ ' + p.name : '◇ (no project)'}</span>
+                  <span style={{ whiteSpace: 'nowrap' }}>{E.fmtMins(p.mins)} <span style={{ color: 'var(--dim)' }}>· {p.sessions}s</span></span>
+                </div>
+                <div style={{ display: 'flex', height: 6, gap: 2, marginBottom: 10 }}>
+                  {p.cats.map((c, ci) => <div key={ci} style={{ width: (c.mins / p.mins) * 100 + '%', background: CD[c.cat] }}></div>)}
+                </div>
+                {p.apps.map((a, ai) => (
+                  <div key={ai} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, alignItems: 'center', color: 'var(--dim)', padding: '3px 0' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}><span style={{ color: 'var(--faint)', flex: '0 0 auto' }}>{ai === p.apps.length - 1 ? '└─' : '├─'}</span> <AppIcon app={a.app} size={17} /> <span style={{ color: 'var(--fg)', whiteSpace: 'nowrap' }}>{a.app}</span></span>
+                    <span style={{ whiteSpace: 'nowrap' }}>{E.fmtMins(a.mins)}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </div>
     </div>
   );
 }
-
-/* ---------------- TIMELINE ---------------- */
 function TimelineView({ E, CD, dens, flash, setFlash }) {
   const span = E.dayEnd - E.dayStart;
   // group sessions by project then category, preserve chronological inside

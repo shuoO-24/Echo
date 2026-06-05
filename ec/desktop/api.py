@@ -11,7 +11,8 @@ from typing import Any
 from ec.app import EchoApp
 from ec.config import SETTINGS
 from ec.desktop.day_payload import build_day_payload
-from ec.desktop.timezone_display import format_hms
+from ec.desktop.ask import answer_prompt, ask_model, llm_available
+from ec.desktop.timezone_display import display_today, format_hms
 from ec.layers.remember.grouping import activity_category
 from ec.layers.remember.log_format import collapse_raw_rows
 from ec.runtime.daemon import daemon_status, stop_daemon
@@ -30,7 +31,7 @@ def _iso(value: datetime | None) -> str | None:
 def _target_date(value: str | None) -> str:
     if value:
         return value
-    return date.today().isoformat()
+    return display_today()
 
 
 def day_payload(target: str | None = None) -> dict[str, Any]:
@@ -45,11 +46,15 @@ def activity_list_payload(
     after: str | None = None,
     limit: int = 48,
 ) -> list[dict[str, Any]]:
+    day = _target_date(target)
     if after:
         after_ts = datetime.fromisoformat(after.replace("Z", ""))
         rows = APP.remember.raw_events_after(after_ts, limit=limit)
     else:
-        rows = APP.remember.raw_rows(last=limit, order="DESC")
+        rows = APP.remember.raw_events_for_date(day)
+        if len(rows) > limit:
+            rows = rows[-limit:]
+        rows = list(reversed(rows))
 
     collapsed = collapse_raw_rows(rows)
     items: list[dict[str, Any]] = []
@@ -149,6 +154,19 @@ def activity_payload(
 def rebuild_sessions() -> dict[str, Any]:
     count = APP.categorize.rebuild()
     return {"sessions": count}
+
+
+def ask_payload(prompt: str, target: str | None = None) -> dict[str, Any]:
+    day = day_payload(target)
+    return answer_prompt(prompt, day)
+
+
+def ask_status_payload() -> dict[str, Any]:
+    available = llm_available()
+    return {
+        "llm_available": available,
+        "model": ask_model() if available else None,
+    }
 
 
 def icon_png(app_name: str, size: int = 64) -> bytes | None:

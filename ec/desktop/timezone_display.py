@@ -34,3 +34,17 @@ def format_hms(ts: datetime) -> str:
 def tz_label() -> str:
     """Short label for UI, e.g. PST or PDT."""
     return to_display(datetime.now(timezone.utc)).strftime("%Z")
+
+
+def display_today() -> str:
+    """Calendar date for the dashboard in DISPLAY_TZ (YYYY-MM-DD)."""
+    return to_display(datetime.now(timezone.utc)).date().isoformat()
+
+
+def pacific_date_sql(column: str) -> str:
+    """SQL predicate: *column* (naive UTC timestamp) falls on calendar day ? in DISPLAY_TZ."""
+    tz = DISPLAY_TZ.key
+    return (
+        f"CAST(({column} AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') AS DATE) "
+        f"= CAST(? AS DATE)"
+    )

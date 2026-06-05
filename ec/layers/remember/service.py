@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
+from ec.desktop.timezone_display import pacific_date_sql
 from ec.infrastructure.duckdb.connection import connect
 
 
@@ -23,12 +24,13 @@ class RememberLayer:
 
     def timeline_rows(self, target: str | None = None) -> tuple[str, list[tuple]]:
         day = target or date.today().isoformat()
+        sess_day = pacific_date_sql("start_ts")
         with connect() as conn:
             rows = conn.execute(
-                """
+                f"""
                 SELECT start_ts, end_ts, app, category, COALESCE(primary_title, ''), switch_count
                 FROM sessions
-                WHERE CAST(start_ts AS DATE) = ?
+                WHERE {sess_day}
                 ORDER BY start_ts
                 """,
                 [day],
@@ -49,37 +51,40 @@ class RememberLayer:
             ).fetchall()
 
     def session_detail_rows(self, target: str) -> list[tuple]:
+        sess_day = pacific_date_sql("start_ts")
         with connect() as conn:
             return conn.execute(
-                """
+                f"""
                 SELECT start_ts, end_ts, app, category, COALESCE(primary_title, ''),
                        kb_total, mouse_total, switch_count, COALESCE(summary, ''), COALESCE(repo, '')
                 FROM sessions
-                WHERE CAST(start_ts AS DATE) = ?
+                WHERE {sess_day}
                 ORDER BY start_ts
                 """,
                 [target],
             ).fetchall()
 
     def raw_events_for_date(self, target: str) -> list[tuple]:
+        raw_day = pacific_date_sql("ts")
         with connect() as conn:
             return conn.execute(
-                """
+                f"""
                 SELECT ts, app, COALESCE(window_title, ''), kb_count, mouse_count, COALESCE(typed_text, '')
                 FROM raw_events
-                WHERE CAST(ts AS DATE) = ?
+                WHERE {raw_day}
                 ORDER BY ts ASC
                 """,
                 [target],
             ).fetchall()
 
     def day_stats(self, target: str) -> tuple[int, int, int]:
+        raw_day = pacific_date_sql("ts")
         with connect() as conn:
             row = conn.execute(
-                """
+                f"""
                 SELECT COUNT(*), COALESCE(SUM(kb_count), 0), COALESCE(SUM(mouse_count), 0)
                 FROM raw_events
-                WHERE CAST(ts AS DATE) = ?
+                WHERE {raw_day}
                 """,
                 [target],
             ).fetchone()

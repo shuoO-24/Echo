@@ -44,7 +44,8 @@ Echo's viewer already serves HTML, so prefer the lightest path that fits your te
 If you'd rather own it as components, port the four views into React/Vue/Svelte using the
 documentation here. The prototype's component split is a good map:
 - `ec-app.jsx` → app shell: theme state, live-stream loop, header/prompt nav, tweak controls.
-- `ec-views.jsx` → the four views + `AppIcon` + `Panel` primitives.
+- `ec-views.jsx` → the views + `AppIcon` + `Panel` primitives (TodayView embeds the ASK query box).
+- `ec-query.jsx` → the `query` tab + ASK box: the SQL console and its read-only interpreter.
 - `shared.jsx` → `DayStrip` / `HourAxis` (timeline band helpers).
 
 In both routes, **category colors are computed on the client** from a fixed name→color map (below);
@@ -114,6 +115,28 @@ a WebSocket/SSE push is a fine substitute.
 - `t` is a wall-clock `HH:MM:SS` string. `kb`/`ms` are the keystroke/mouse counts in that
   collapsed window. `win` is the window title.
 
+### `POST /api/query`  (body: `{ "sql": "select …" }`)
+Powers the `query` tab and the embedded **ASK** box on `today`. Run the SQL **read-only** against
+`echo.duckdb` (a read-only connection / `SET access_mode='READ_ONLY'`; reject anything that isn't a
+single `SELECT`). Return columns in declared order plus row objects:
+```json
+{
+  "columns": [
+    { "name": "app", "type": "text" },
+    { "name": "mins", "type": "integer" }
+  ],
+  "rows": [
+    { "app": "Cursor", "mins": 305 },
+    { "app": "Zoom", "mins": 52 }
+  ],
+  "elapsed_ms": 3.2
+}
+```
+- The UI right-aligns numeric columns and renders `start`/`end` as `HH:MM`. On a SQL error return
+  HTTP 400 `{ "error": "…", "hint": "…" }`; the console prints it in red.
+- Expose `sessions` (and optionally the raw `events`) as the queryable table(s). The prototype's
+  column set is the contract: `app, cat, project, title, mins, kb, ms, start, end`.
+
 ### Control endpoints (header controls)
 - `GET  /api/collector/status` → `{ "running": true }` (drives the status pill).
 - `POST /api/collector/start` / `POST /api/collector/stop` → toggles the collector (the
@@ -130,8 +153,8 @@ theme toggle), then a **prompt nav** row, then the active view. Content max-widt
 22px side padding.
 
 ### Prompt nav (persistent header)
-- Left: `~/echo` (dim) · `$` (green) · `ec` (fg) · then the four commands
-  `today | timeline | projects | activity` as clickable tabs. Active tab = accent background,
+- Left: `~/echo` (dim) · `$` (green) · `ec` (fg) · then the five commands
+  `today | timeline | projects | query | activity` as clickable tabs. Active tab = accent background,
   `--bg` colored text, 4px radius. A blinking block cursor trails the row. When on `activity` with
   live on, a `--live` flag (accent) appears.
 - Right cluster (dim, mono): clickable **collector** pill (green dot = running / red dot + red text
@@ -148,9 +171,15 @@ theme toggle), then a **prompt nav** row, then the active view. Content max-widt
     category active at that slice of the working window (idle = `--line`), with `08/10/12/14/16` ticks.
   - **LIVE panel** — header right link `ec activity ▸` (switches view). Shows the 7 newest feed rows
     (see Activity row spec), then `● live`/`◌ paused` + blinking cursor.
-- **PROJECTS panel** (full width) — 3 columns, one per project: header (`◆ name` accent / `◇ (no
-  project)` dim, + `mins · Ns`), a 6px stacked category bar, then app rows (`├─`/`└─` tree glyph +
-  **AppIcon** + name … mins).
+- **Bottom row — `minmax(0,1.72fr) minmax(0,1fr)` grid, `align-items:start`:**
+  - **ASK (left, wider)** — a heading `▸ ASK  query your day · read-only SQL`, then an embedded
+    **compact** QUERY console (same component as the `query` tab; see view 4 below). On the home page
+    it does NOT autofocus, the scrollback is capped at 210px, and only 3 example chips show.
+  - **PROJECTS (right, narrower)** — a Panel (`▸ PROJECTS`, right header `time · sessions`) with the
+    projects **stacked vertically** (one per row, divider between). Each: a `1fr auto` header grid
+    (`◆ name` accent / `◇ (no project)` dim  ——  `mins · Ns`), a 6px stacked category bar, then app
+    rows as `1fr auto` grids (`├─`/`└─` tree glyph + **AppIcon** + name  ——  mins). NB: use a `1fr auto`
+    grid (not flex `space-between`) for these rows so names don't collapse in the narrow column.
 
 ### 2. `timeline`
 - **TIMELINE panel:** a 30px solid day band (each session positioned by `start`/`end` within
@@ -161,7 +190,26 @@ theme toggle), then a **prompt nav** row, then the active view. Content max-widt
   2px left border: `start → end` (116px) · **AppIcon** + app (132px) · title (flex, dim, ellipsis) ·
   duration (right, 54px). Rows highlight on hover.
 
-### 3. `projects`
+### 3a. `query`  (and the embedded ASK box on `today`)
+A small **read-only SQL console** over the `sessions` table. Header `▸ QUERY` / right `read-only ·
+echo.duckdb`. A scrollback area of past commands + results, then an input line (`$` green prompt,
+accent caret) and a row of clickable example-query chips + a `help` link.
+- **Mechanics:** Enter runs; **↑/↓** recalls command history; clicking a chip runs it; `N rows · Xms`
+  footer under each result; new results scroll the scrollback to the bottom (set `scrollTop`, never
+  `scrollIntoView`).
+- **Supported grammar** (parsed client-side in the prototype; in production back this with a real
+  read-only DuckDB query — see the `/api/query` contract): `select <cols|aggregates> from sessions
+  [where <col> <op> <val> [and …]] [group by <col>] [order by <col|alias> [asc|desc]] [limit n]`.
+  Ops: `= != > < >= <= like`. Aggregates: `sum() count() avg() min() max()`, optional `as alias`.
+  Columns: `app, cat (category), project, title, mins (duration), kb, ms, start, end`. `start/end`
+  render as `HH:MM`. Plus meta commands: `help`, `schema` (lists columns + types), `clear`.
+- **Result table:** monospace, accent column headers, 1px `--line` row borders, numeric columns
+  right-aligned + `tabular-nums` + `toLocaleString()`. Errors print red (`✗ message` + `↳ hint`).
+- **Production note:** the prototype ships a tiny in-browser interpreter (`ec-query.jsx`) purely so the
+  design is live without a backend. Replace `runQuery()` with a POST to `/api/query` that runs the SQL
+  read-only against `echo.duckdb` and returns `{columns, rows}`; keep the parser only as input hints.
+
+### 3b. `projects`
 - One **Panel per project** (title = project name, right = `mins · N sessions`). Body is a 2-column
   grid: **categories** (label + ASCII bar + mins) and **apps** (AppIcon + app + faded ASCII bar + mins).
 
@@ -187,7 +235,7 @@ theme toggle), then a **prompt nav** row, then the active view. Content max-widt
 - **Blinking cursor:** `@keyframes ecblink` (1.1s step-end). New-feed-row entrance: `@keyframes ecin`.
 
 ## State management
-- `view`: `'today' | 'timeline' | 'projects' | 'activity'`
+- `view`: `'today' | 'timeline' | 'projects' | 'query' | 'activity'`
 - `collector: boolean`, `live: boolean` (stream runs only when both true)
 - `feed: Event[]` (newest first, capped), `clock: number` (seconds), `kb: number`, `ms: number`
 - `flash: number | null` (timeline session index currently highlighted)
@@ -239,7 +287,8 @@ Optional CRT scanline overlay (tweak, off by default).
 ## Files
 - `prototype/Echo — ec Terminal.html` — entry point; load order + favicon live here.
 - `prototype/ec-app.jsx` — app shell, theme/live state, header, `RippleMark`, tweak controls.
-- `prototype/ec-views.jsx` — `TodayView`, `TimelineView`, `ProjectsView`, `ActivityView`, `Panel`, `AppIcon`.
+- `prototype/ec-views.jsx` — `TodayView` (incl. the embedded ASK box + stacked Projects), `TimelineView`, `ProjectsView`, `ActivityView`, `Panel`, `AppIcon`.
+- `prototype/ec-query.jsx` — `QueryView` + the read-only SQL interpreter (`runQuery`); replace with the `/api/query` call in production.
 - `prototype/shared.jsx` — `DayStrip`, `HourAxis` timeline helpers.
 - `prototype/data.js` — **the mock `window.ECHO`; use it as the exact reference for the JSON shape.**
 - `prototype/tweaks-panel.jsx` — the in-design tweak controls (design-tool only; drop in production).

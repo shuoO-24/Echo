@@ -40,9 +40,23 @@ const DENSITY = {
   comfy: { fs: 14.5, pad: 10, gap: 15 },
 };
 
+function pacificToday() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+  }).format(new Date());
+}
+
+function addPacificDays(iso, delta) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const utc = Date.UTC(y, m - 1, d + delta, 12, 0, 0);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Los_Angeles",
+  }).format(new Date(utc));
+}
+
 const state = {
   view: "today",
-  date: new Date().toISOString().slice(0, 10),
+  date: pacificToday(),
   E: null,
   feed: [],
   collector: false,
@@ -246,32 +260,42 @@ function renderToday(E, CD, dens) {
        <span style="color:${streaming ? "var(--green)" : "var(--dim)"}">${streaming ? "● live" : "◌ paused"}</span><span class="ec-cur"></span></div></div>`
   );
 
-  const projCols = E.projects
-    .map((p) => {
+  const projectStacks = E.projects
+    .map((p, pi) => {
       const barCats = p.cats
         .map((c) => `<div style="width:${(c.mins / p.mins) * 100}%;background:${CD[c.cat]}"></div>`)
         .join("");
       const apps = p.apps
         .map(
-          (a, ai) => `<div style="display:flex;justify-content:space-between;align-items:center;color:var(--dim);padding:3px 0">
-          <span style="display:inline-flex;align-items:center;gap:8px"><span style="color:var(--faint)">${ai === p.apps.length - 1 ? "└─" : "├─"}</span>${appIcon(a.app, 17)}<span style="color:var(--fg)">${esc(a.app)}</span></span>
+          (a, ai) => `<div class="ec-proj-app-row">
+          <span class="ec-proj-app-name"><span class="ec-proj-branch">${ai === p.apps.length - 1 ? "└─" : "├─"}</span>${appIcon(a.app, 17)}<span>${esc(a.app)}</span></span>
           <span>${fmtMins(a.mins)}</span></div>`
         )
         .join("");
-      return `<div><div style="display:flex;justify-content:space-between;margin-bottom:9px">
-        <span style="color:${p.name ? "var(--accent)" : "var(--dim)"}">${p.name ? "◆ " + esc(p.name) : "◇ (no project)"}</span>
-        <span>${fmtMins(p.mins)} <span style="color:var(--dim)">· ${p.sessions}s</span></span></div>
-        <div style="display:flex;height:6px;gap:2px;margin-bottom:10px">${barCats}</div>${apps}</div>`;
+      const divider = pi < E.projects.length - 1 ? " ec-proj-divider" : "";
+      return `<div class="ec-proj-stack${divider}">
+        <div class="ec-proj-stack-head">
+          <span style="color:${p.name ? "var(--accent)" : "var(--dim)"}">${p.name ? "◆ " + esc(p.name) : "◇ (no project)"}</span>
+          <span>${fmtMins(p.mins)} <span style="color:var(--dim)">· ${p.sessions}s</span></span>
+        </div>
+        <div class="ec-proj-cat-bar">${barCats}</div>${apps}</div>`;
     })
     .join("");
 
   const projectsPanel = panel(
     "PROJECTS",
-    "project ▸ category ▸ app",
-    `<div class="ec-projects-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px">${projCols || '<span style="color:var(--dim)">no projects</span>'}</div>`
+    "time · sessions",
+    `<div class="ec-proj-stacks">${projectStacks || '<span style="color:var(--dim)">no projects</span>'}</div>`
   );
 
-  return `${headline}<div class="ec-grid-today" style="display:grid;grid-template-columns:1.55fr 1fr;gap:16px">${activityPanel}${livePanel}</div>${projectsPanel}`;
+  const askCol = `<div class="ec-ask-col">${window.ecAsk.renderAskHeading()}${window.ecAsk.renderConsole(true, dens)}</div>`;
+  const bottomRow = `<div class="ec-grid-bottom">${askCol}${projectsPanel}</div>`;
+
+  return `${headline}<div class="ec-grid-today">${activityPanel}${livePanel}</div>${bottomRow}`;
+}
+
+function renderAsk(dens) {
+  return window.ecAsk.renderConsole(false, dens);
 }
 
 function renderTimeline(E, CD, dens) {
@@ -400,6 +424,7 @@ function render() {
     ["today", "today"],
     ["timeline", "timeline"],
     ["projects", "projects"],
+    ["ask", "ask"],
     ["activity", "activity"],
   ];
 
@@ -408,6 +433,7 @@ function render() {
     if (state.view === "today") body = renderToday(E, CD, dens);
     else if (state.view === "timeline") body = renderTimeline(E, CD, dens);
     else if (state.view === "projects") body = renderProjects(E, CD, dens);
+    else if (state.view === "ask") body = renderAsk(dens);
     else body = renderActivity(E, CD, dens);
   }
 
@@ -473,6 +499,24 @@ function render() {
       render();
     });
   });
+  bindAskConsoles(dens);
+}
+
+function bindAskConsoles(dens) {
+  if (!window.ecAsk) return;
+  window.ecAskState.date = state.date;
+  document.querySelectorAll(".ec-ask-console").forEach((el) => {
+    const compact = el.getAttribute("data-ask-compact") === "1";
+    window.ecAsk.bindConsole(el, {
+      date: state.date,
+      dens,
+      compact,
+      onUpdate() {
+        window.ecAsk.refreshScrollback(el);
+      },
+    });
+  });
+  if (state.view === "today" || state.view === "ask") window.ecAsk.ensureWelcome();
 }
 
 async function onAction(action) {
@@ -522,9 +566,7 @@ async function onAction(action) {
 }
 
 function shiftDate(delta) {
-  const d = new Date(state.date + "T12:00:00");
-  d.setDate(d.getDate() + delta);
-  state.date = d.toISOString().slice(0, 10);
+  state.date = addPacificDays(state.date, delta);
   loadDay();
 }
 
@@ -536,6 +578,7 @@ async function refreshCollector() {
 async function loadDay() {
   const E = attachEchoHelpers(await fetchJson(`/api/day?date=${encodeURIComponent(state.date)}`));
   state.E = E;
+  state.date = E.date;
   state.kb = E.totals.kb;
   state.ms = E.totals.ms;
   await loadFeed(false);

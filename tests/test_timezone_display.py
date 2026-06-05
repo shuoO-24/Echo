@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timezone
 
-from ec.desktop.timezone_display import format_hm, minutes_from_midnight, to_display
+from ec.desktop.timezone_display import display_today, format_hm, minutes_from_midnight, to_display
 
 
 class TestTimezoneDisplay(unittest.TestCase):
@@ -16,6 +16,9 @@ class TestTimezoneDisplay(unittest.TestCase):
         local = to_display(ts)
         self.assertEqual(local.hour, 12)
         self.assertEqual(local.strftime("%Z"), "PST")
+
+    def test_display_today_format(self) -> None:
+        self.assertRegex(display_today(), r"^\d{4}-\d{2}-\d{2}$")
 
 
 if __name__ == "__main__":

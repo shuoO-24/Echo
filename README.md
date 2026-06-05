@@ -1,5 +1,7 @@
 # Echo (MVP)
 
+![Echo desktop dashboard — ec terminal UI at localhost:7000](docs/desktop-screenshot.png)
+
 Echo is a local-first activity monitor. This MVP implements the week 1/2 core:
 
 - metadata-only event ingest
@@ -66,7 +68,7 @@ python -m ec.main today
 
 ## Desktop app
 
-Launch the **ec:// terminal** dashboard (monospace UI, four views: `today`, `timeline`, `projects`, `activity`):
+Launch the **ec:// terminal** dashboard (monospace UI, views: `today`, `timeline`, `projects`, `ask`, `activity`):
 
 ```bash
 pip install -r requirements.txt
@@ -90,6 +92,21 @@ python -m ec.main start --interval 10 --capture-text
 ```
 
 In the UI: **Rebuild sessions** (or `ec sessionize`) after collecting data; toggle **collector** and **live** in the header; switch theme with **☾ dark / ☀ light**.
+
+### ASK (natural language)
+
+The **ask** tab and the **ASK** box on **today** answer questions about your day. With a Moonshot key, Echo uses **Kimi K2.6** (`kimi-k2.6`). Without a key, local rule-based answers are used instead.
+
+```bash
+export MOONSHOT_API_KEY="sk-..."   # or ECHO_MOONSHOT_API_KEY — from platform.kimi.ai
+# optional overrides:
+# export ECHO_ASK_MODEL=kimi-k2.6
+# export ECHO_LLM_BASE_URL=https://api.moonshot.ai/v1
+
+# OpenAI still works if you set ECHO_ASK_MODEL=gpt-4o-mini and OPENAI_API_KEY
+
+python -m ec.main desktop
+```
 
 ## Daemon usage
 
